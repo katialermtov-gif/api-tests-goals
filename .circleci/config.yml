@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   goals-api-tests:
     docker:
-      - image: cypress/browsers:node-20.18.0-chrome-131.0.6778.69-1-ff-131.0-edge-131.0.1-1
+      - image: cypress/browsers:node-20.18.0-chrome-130.0.6723.69-1-ff-131.0.3-edge-130.0.2849.52-1
 
     steps:
       - checkout
