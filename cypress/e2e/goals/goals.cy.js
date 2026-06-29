@@ -1,13 +1,9 @@
 /// <reference types="cypress" />
 const { faker } = require("@faker-js/faker");
+const { authHeader, baseUrl, assertClickupToken } = require("../../support/clickup");
 
-const AUTH_HEADER = {
-  Authorization: "pk_302443215_UBA3N9JV7WG7U3CCYWUWTBMYFGQP2E79",
-};
-
-const BASE_URL = "https://api.clickup.com/api/v2";
-const TEAM_ID = "90121755543";
-const OWNER_ID = 302443215;
+const teamId = () => Cypress.env("clickupTeamId");
+const ownerId = () => Cypress.env("clickupOwnerId");
 
 const createdGoalIds = [];
 let createdGoalId;
@@ -15,12 +11,16 @@ let goalName;
 let updatedGoalName;
 
 describe("Tests for goals api for Clickup", () => {
+  before(() => {
+    assertClickupToken();
+  });
+
   after(() => {
     createdGoalIds.forEach((goalId) => {
       cy.request({
         method: "DELETE",
-        url: `${BASE_URL}/goal/${goalId}`,
-        headers: AUTH_HEADER,
+        url: `${baseUrl()}/goal/${goalId}`,
+        headers: authHeader(),
         failOnStatusCode: false,
       }).then((response) => {
         cy.log(`Cleanup delete goal ${goalId}, status: ${response.status}`);
@@ -37,14 +37,14 @@ describe("Tests for goals api for Clickup", () => {
 
     cy.request({
       method: "POST",
-      url: `${BASE_URL}/team/${TEAM_ID}/goal`,
-      headers: AUTH_HEADER,
+      url: `${baseUrl()}/team/${teamId()}/goal`,
+      headers: authHeader(),
       body: {
         name: goalName,
         due_date: dueDate,
         description: "Goal created by Cypress test",
         multiple_owners: true,
-        owners: [OWNER_ID],
+        owners: [ownerId()],
         color: "#32a852",
       },
       failOnStatusCode: false,
@@ -65,8 +65,8 @@ describe("Tests for goals api for Clickup", () => {
   it("sent get request to team goals returns 200 and contains created goal", () => {
     cy.request({
       method: "GET",
-      url: `${BASE_URL}/team/${TEAM_ID}/goal`,
-      headers: AUTH_HEADER,
+      url: `${baseUrl()}/team/${teamId()}/goal`,
+      headers: authHeader(),
       failOnStatusCode: false,
     }).then((response) => {
       cy.log(`Status: ${response.status}`);
@@ -85,8 +85,8 @@ describe("Tests for goals api for Clickup", () => {
   it("sent get request to goal by id returns 200", () => {
     cy.request({
       method: "GET",
-      url: `${BASE_URL}/goal/${createdGoalId}`,
-      headers: AUTH_HEADER,
+      url: `${baseUrl()}/goal/${createdGoalId}`,
+      headers: authHeader(),
       failOnStatusCode: false,
     }).then((response) => {
       cy.log(`Status: ${response.status}`);
@@ -106,8 +106,8 @@ describe("Tests for goals api for Clickup", () => {
 
     cy.request({
       method: "PUT",
-      url: `${BASE_URL}/goal/${createdGoalId}`,
-      headers: AUTH_HEADER,
+      url: `${baseUrl()}/goal/${createdGoalId}`,
+      headers: authHeader(),
       body: {
         name: updatedGoalName,
         due_date: updatedDueDate,
@@ -132,8 +132,8 @@ describe("Tests for goals api for Clickup", () => {
   it("sent Delete request to goal returns 200", () => {
     cy.request({
       method: "DELETE",
-      url: `${BASE_URL}/goal/${createdGoalId}`,
-      headers: AUTH_HEADER,
+      url: `${baseUrl()}/goal/${createdGoalId}`,
+      headers: authHeader(),
       failOnStatusCode: false,
     }).then((deleteResponse) => {
       cy.log(`Delete status: ${deleteResponse.status}`);
