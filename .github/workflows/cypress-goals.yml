@@ -1,0 +1,45 @@
+name: Cypress Goals Tests
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  goals-api-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run goals Cypress tests
+        run: npm run run:goals
+        env:
+          CLICKUP_TOKEN: ${{ secrets.CLICKUP_TOKEN }}
+          CLICKUP_TEAM_ID: ${{ secrets.CLICKUP_TEAM_ID }}
+          CLICKUP_OWNER_ID: ${{ secrets.CLICKUP_OWNER_ID }}
+          CLICKUP_FOLDER_ID: ${{ secrets.CLICKUP_FOLDER_ID }}
+          CLICKUP_EXISTING_LIST_ID: ${{ secrets.CLICKUP_EXISTING_LIST_ID }}
+
+      - name: Upload Cypress artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-artifacts
+          path: |
+            cypress/screenshots
+            cypress/videos
+          if-no-files-found: ignore
